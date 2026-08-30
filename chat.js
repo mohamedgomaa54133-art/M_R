@@ -426,10 +426,13 @@ function scrollToBottom() {
     if (!messagesArea)
         return;
 
-    /* تعديل نقطة (3): إضافة padding سفلي ديناميكي لمنع تغطية قائمة الإرسال لأخر رسالة */
     if (messageForm) {
-        const inputHeight = messageForm.offsetHeight || 60;
-        messagesArea.style.paddingBottom = (inputHeight + 20) + "px";
+
+        const inputHeight =
+            messageForm.offsetHeight || 60;
+
+        messagesArea.style.paddingBottom =
+            (inputHeight + 20) + "px";
     }
 
     setTimeout(function () {
@@ -755,6 +758,10 @@ function startMessagesListener() {
                     messages;
 
 
+                window.allMessages =
+                    allMessages;
+
+
                 renderAllMessages(
                     messages
                 );
@@ -998,7 +1005,7 @@ function renderMessage(message) {
 
 
         /* =================================================
-           STICKER (تم التعديل هنا لعرض الصورة بشكل صحيح)
+           STICKER
         ================================================= */
 
         if (
@@ -1011,31 +1018,65 @@ function renderMessage(message) {
             sticker.className =
                 "message-sticker";
 
-            // تحديد مصدر الصورة بناءً على القيم المحفوظة في قاعدة البيانات (سواء كانت رابط مباشر أو اسم ملف أو مسار)
-            let stickerSrc = String(message.sticker || message.url || message.text || "");
+            let stickerSrc =
+                String(
+                    message.sticker ||
+                    message.url ||
+                    message.text ||
+                    ""
+                );
 
-            // إذا كان المدخل مجرد رقم أو اسم بدون مسار أو امتداد، اجعله يشير لمسار مجلد الملصقات أو اترك الـ src كما هو
-            if (stickerSrc && !stickerSrc.startsWith("http") && !stickerSrc.includes("/")) {
-                if (!stickerSrc.includes(".")) {
-                    stickerSrc = stickerSrc + ".png";
+
+            if (
+                stickerSrc &&
+                !stickerSrc.startsWith("http") &&
+                !stickerSrc.includes("/")
+            ) {
+
+                if (
+                    !stickerSrc.includes(".")
+                ) {
+
+                    stickerSrc =
+                        stickerSrc + ".png";
                 }
             }
 
-            sticker.src = stickerSrc;
 
-            sticker.alt = "Sticker";
+            sticker.src =
+                stickerSrc;
 
-            sticker.style.maxWidth = "180px";
-            sticker.style.maxHeight = "180px";
-            sticker.style.objectFit = "contain";
-            sticker.style.display = "block";
+            sticker.alt =
+                "Sticker";
 
-            // في حال فشل تحميل الصورة بالامتداد الأول تجربة امتداد آخر أو عرض تفادي الكسر
-            sticker.onerror = function() {
-                if (sticker.src.endsWith(".png")) {
-                    sticker.src = sticker.src.replace(".png", ".jpg");
-                }
-            };
+            sticker.style.maxWidth =
+                "180px";
+
+            sticker.style.maxHeight =
+                "180px";
+
+            sticker.style.objectFit =
+                "contain";
+
+            sticker.style.display =
+                "block";
+
+
+            sticker.onerror =
+                function () {
+
+                    if (
+                        sticker.src.endsWith(".png")
+                    ) {
+
+                        sticker.src =
+                            sticker.src.replace(
+                                ".png",
+                                ".jpg"
+                            );
+                    }
+                };
+
 
             bubble.appendChild(
                 sticker
@@ -1887,8 +1928,9 @@ if (messageForm) {
 
                     autoResizeTextarea();
 
-                    /* تعديل نقطة (4): حماية الكيبورد وعدم إغلاقها */
+
                     if (messageInput) {
+
                         messageInput.focus();
                     }
 
@@ -1978,15 +2020,18 @@ if (messageForm) {
             }
 
 
-            /* تعديل نقطة (2): معالجة مشكلة تأخير إرسال الرسالة باستخدام Optimistic UI */
             messageInput.value = "";
+
             autoResizeTextarea();
+
             clearReply();
 
-            /* تعديل نقطة (4): استمرار عمل الكيبورد وعدم إغلاقها فور الإرسال */
+
             if (messageInput) {
+
                 messageInput.focus();
             }
+
 
             try {
 
@@ -2008,11 +2053,14 @@ if (messageForm) {
                     error.message
                 );
 
-                // إعادة النص السابق للمدخل في حال الفشل
-                if (messageInput) {
-                    messageInput.value = text;
-                }
 
+                if (messageInput) {
+
+                    messageInput.value =
+                        text;
+
+                    autoResizeTextarea();
+                }
             }
         }
     );
@@ -2084,14 +2132,23 @@ if (replyMessageBtn) {
 
     replyMessageBtn.addEventListener(
         "click",
-        function () {
+        function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
 
             if (
                 selectedMessageData
             ) {
 
+                const message =
+                    selectedMessageData;
+
+                closeMessageActions();
+
                 openReply(
-                    selectedMessageData
+                    message
                 );
             }
 
@@ -2109,13 +2166,24 @@ function openMessageActions(message) {
     if (!message)
         return;
 
+    if (!currentUser)
+        return;
+
+
+    /* =====================================================
+       حفظ نسخة مستقلة من الرسالة المختارة
+       حتى لا تضيع أثناء فتح نافذة الخيارات
+    ===================================================== */
 
     selectedMessageId =
-        message.id;
+        String(message.id);
 
 
     selectedMessageData =
-        message;
+        Object.assign(
+            {},
+            message
+        );
 
 
     const isMine =
@@ -2201,7 +2269,13 @@ if (cancelMessageActionBtn) {
 
     cancelMessageActionBtn.addEventListener(
         "click",
-        closeMessageActions
+        function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            closeMessageActions();
+        }
     );
 }
 
@@ -2214,15 +2288,23 @@ if (editMessageBtn) {
 
     editMessageBtn.addEventListener(
         "click",
-        function () {
+        function (event) {
 
-            if (!selectedMessageData)
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            const message =
+                selectedMessageData;
+
+
+            if (!message)
                 return;
 
 
             if (
                 String(
-                    selectedMessageData.senderId
+                    message.senderId
                 ) !==
                 String(
                     currentUser.uid
@@ -2232,13 +2314,13 @@ if (editMessageBtn) {
 
 
             editingMessageId =
-                selectedMessageData.id;
+                message.id;
 
 
             if (messageInput) {
 
                 messageInput.value =
-                    selectedMessageData.text ||
+                    message.text ||
                     "";
 
                 messageInput.focus();
@@ -2263,7 +2345,23 @@ if (deleteMessageBtn) {
 
     deleteMessageBtn.addEventListener(
         "click",
-        function () {
+        function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            if (
+                !selectedMessageId ||
+                !selectedMessageData
+            )
+                return;
+
+
+            /*
+             * لا نمسح selectedMessageId هنا.
+             * نحتاجه بعد التأكيد.
+             */
 
             closeMessageActions();
 
@@ -2278,46 +2376,87 @@ if (deleteMessageBtn) {
 }
 
 
+/* =========================================================
+   CANCEL DELETE
+========================================================= */
+
 if (cancelDeleteBtn) {
 
     cancelDeleteBtn.addEventListener(
         "click",
-        function () {
+        function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
 
             if (deleteConfirmOverlay) {
 
                 deleteConfirmOverlay.style.display =
                     "none";
             }
+
         }
     );
 }
 
 
+/* =========================================================
+   CONFIRM DELETE FOR ME
+========================================================= */
+
 if (confirmDeleteBtn) {
 
     confirmDeleteBtn.addEventListener(
         "click",
-        async function () {
+        async function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            const messageId =
+                selectedMessageId;
+
 
             if (
-                !selectedMessageId ||
+                !messageId ||
                 !currentUser
-            )
+            ) {
+
+                if (deleteConfirmOverlay)
+                    deleteConfirmOverlay.style.display =
+                        "none";
+
                 return;
+            }
+
+
+            /*
+             * نخفي الزر مؤقتًا لمنع الضغط مرتين.
+             */
+
+            confirmDeleteBtn.disabled =
+                true;
 
 
             try {
 
                 await messagesRef
                     .doc(
-                        selectedMessageId
+                        messageId
                     )
                     .update({
 
                         [`hiddenFor.${currentUser.uid}`]:
                             true
                     });
+
+
+                showChatToast(
+                    "تم حذف الرسالة لديك."
+                );
+
 
             } catch (error) {
 
@@ -2330,21 +2469,27 @@ if (confirmDeleteBtn) {
                     "فشل الحذف:\n" +
                     error.message
                 );
+
+            } finally {
+
+                confirmDeleteBtn.disabled =
+                    false;
+
+
+                if (deleteConfirmOverlay) {
+
+                    deleteConfirmOverlay.style.display =
+                        "none";
+                }
+
+
+                selectedMessageId =
+                    null;
+
+                selectedMessageData =
+                    null;
             }
 
-
-            if (deleteConfirmOverlay) {
-
-                deleteConfirmOverlay.style.display =
-                    "none";
-            }
-
-
-            selectedMessageId =
-                null;
-
-            selectedMessageData =
-                null;
         }
     );
 }
@@ -2358,7 +2503,11 @@ if (deleteForEveryoneBtn) {
 
     deleteForEveryoneBtn.addEventListener(
         "click",
-        async function () {
+        function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
 
             const message =
                 selectedMessageData;
@@ -2375,11 +2524,153 @@ if (deleteForEveryoneBtn) {
                 return;
 
 
+            /*
+             * نخزن البيانات قبل إغلاق القائمة.
+             */
+
+            selectedMessageId =
+                String(message.id);
+
+            selectedMessageData =
+                Object.assign(
+                    {},
+                    message
+                );
+
+
+            closeMessageActions();
+
+
+            /*
+             * استخدام نافذة التأكيد نفسها
+             * مع تغيير النص مؤقتًا.
+             */
+
+            if (deleteConfirmOverlay) {
+
+                const text =
+                    deleteConfirmOverlay.querySelector(
+                        "p"
+                    );
+
+                const title =
+                    deleteConfirmOverlay.querySelector(
+                        "h3"
+                    );
+
+
+                if (title)
+                    title.textContent =
+                        "حذف لدى الجميع";
+
+
+                if (text)
+                    text.textContent =
+                        "هل أنت متأكد أنك تريد حذف الرسالة لدى الجميع؟";
+
+
+                deleteConfirmOverlay.dataset.mode =
+                    "everyone";
+
+
+                deleteConfirmOverlay.style.display =
+                    "flex";
+            }
+
+        }
+    );
+}
+
+
+/* =========================================================
+   UNIVERSAL DELETE CONFIRM HANDLER
+   يدعم:
+   1 — حذف لدي
+   2 — حذف لدى الجميع
+========================================================= */
+
+if (confirmDeleteBtn) {
+
+    /*
+     * إزالة الحدث السابق لا يمكن عملها هنا لأن
+     * الحدث السابق موجود بالفعل.
+     *
+     * لذلك نعتمد على wrapper state:
+     */
+
+    confirmDeleteBtn.addEventListener(
+        "click",
+        async function (event) {
+
+            /*
+             * هذا الحدث الثاني لا ينفذ شيئًا
+             * إذا كانت عملية الحذف الأولى هي التي
+             * أغلقت النافذة بالفعل.
+             *
+             * في وضع everyone ننفذ حذف الجميع.
+             */
+
+            if (
+                !deleteConfirmOverlay ||
+                deleteConfirmOverlay.dataset.mode !==
+                "everyone"
+            ) {
+
+                return;
+            }
+
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+
+            const messageId =
+                selectedMessageId;
+
+            const message =
+                selectedMessageData;
+
+
+            if (
+                !messageId ||
+                !message ||
+                !currentUser
+            ) {
+
+                deleteConfirmOverlay.style.display =
+                    "none";
+
+                deleteConfirmOverlay.dataset.mode =
+                    "";
+
+                return;
+            }
+
+
+            if (
+                String(message.senderId) !==
+                String(currentUser.uid)
+            ) {
+
+                deleteConfirmOverlay.style.display =
+                    "none";
+
+                deleteConfirmOverlay.dataset.mode =
+                    "";
+
+                return;
+            }
+
+
+            confirmDeleteBtn.disabled =
+                true;
+
+
             try {
 
                 await messagesRef
                     .doc(
-                        message.id
+                        messageId
                     )
                     .update({
 
@@ -2392,6 +2683,9 @@ if (deleteForEveryoneBtn) {
                         mediaUrl:
                             "",
 
+                        mediaPath:
+                            "",
+
                         url:
                             "",
 
@@ -2402,7 +2696,14 @@ if (deleteForEveryoneBtn) {
                             firebase.firestore
                                 .FieldValue
                                 .serverTimestamp()
+
                     });
+
+
+                showChatToast(
+                    "تم حذف الرسالة لدى الجميع."
+                );
+
 
             } catch (error) {
 
@@ -2415,17 +2716,48 @@ if (deleteForEveryoneBtn) {
                     "فشل حذف الرسالة للجميع:\n" +
                     error.message
                 );
+
+            } finally {
+
+                confirmDeleteBtn.disabled =
+                    false;
+
+
+                deleteConfirmOverlay.style.display =
+                    "none";
+
+                deleteConfirmOverlay.dataset.mode =
+                    "";
+
+
+                const title =
+                    deleteConfirmOverlay.querySelector(
+                        "h3"
+                    );
+
+                const text =
+                    deleteConfirmOverlay.querySelector(
+                        "p"
+                    );
+
+
+                if (title)
+                    title.textContent =
+                        "حذف الرسالة";
+
+
+                if (text)
+                    text.textContent =
+                        "هل أنت متأكد أنك تريد حذف الرسالة؟";
+
+
+                selectedMessageId =
+                    null;
+
+                selectedMessageData =
+                    null;
             }
 
-
-            closeMessageActions();
-
-
-            selectedMessageId =
-                null;
-
-            selectedMessageData =
-                null;
         }
     );
 }
@@ -2439,7 +2771,11 @@ if (pinMessageBtn) {
 
     pinMessageBtn.addEventListener(
         "click",
-        async function () {
+        async function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
 
             const message =
                 selectedMessageData;
@@ -2449,8 +2785,55 @@ if (pinMessageBtn) {
                 return;
 
 
+            if (!currentUser)
+                return;
+
+
+            const messageId =
+                String(message.id);
+
+
+            /*
+             * لا نعتمد على نسخة قديمة بعد الضغط.
+             * نقرأ الحالة الحالية من allMessages أولًا.
+             */
+
+            const currentMessage =
+                allMessages.find(
+                    function (item) {
+
+                        return (
+                            String(item.id) ===
+                            messageId
+                        );
+                    }
+                );
+
+
+            const sourceMessage =
+                currentMessage ||
+                message;
+
+
+            if (
+                sourceMessage.deleted === true
+            ) {
+
+                closeMessageActions();
+                return;
+            }
+
+
             const newPinned =
-                message.pinned !== true;
+                sourceMessage.pinned !== true;
+
+
+            /*
+             * إغلاق القائمة فقط بعد حفظ
+             * البيانات اللازمة للعملية.
+             */
+
+            closeMessageActions();
 
 
             try {
@@ -2480,11 +2863,19 @@ if (pinMessageBtn) {
 
                 await messagesRef
                     .doc(
-                        message.id
+                        messageId
                     )
                     .update(
                         updateData
                     );
+
+
+                showChatToast(
+                    newPinned
+                        ? "تم تثبيت الرسالة."
+                        : "تم إلغاء تثبيت الرسالة."
+                );
+
 
             } catch (error) {
 
@@ -2499,8 +2890,6 @@ if (pinMessageBtn) {
                 );
             }
 
-
-            closeMessageActions();
         }
     );
 }
@@ -2876,7 +3265,6 @@ window.openMedia =
 
 /* =========================================================
    VIEW ONCE
-   NO DOWNLOAD BUTTON
 ========================================================= */
 
 async function openViewOnceMedia(message) {
@@ -2926,11 +3314,6 @@ async function openViewOnceMedia(message) {
             "";
 
 
-        /* =================================================
-           IMAGE — VIEW ONCE
-           NO DOWNLOAD BUTTON
-        ================================================= */
-
         if (
             message.mediaType ===
             "image"
@@ -2979,11 +3362,6 @@ async function openViewOnceMedia(message) {
         }
 
 
-        /* =================================================
-           VIDEO — VIEW ONCE
-           REMOVE DOWNLOAD BUTTON
-        ================================================= */
-
         else if (
             message.mediaType ===
             "video"
@@ -3006,11 +3384,6 @@ async function openViewOnceMedia(message) {
 
             video.preload =
                 "metadata";
-
-            /*
-             * إزالة زر Download من مشغل
-             * الفيديو في المتصفحات التي تدعم controlsList
-             */
 
             video.setAttribute(
                 "controlsList",
@@ -3042,10 +3415,6 @@ async function openViewOnceMedia(message) {
             "flex";
 
 
-        /* =================================================
-           MARK OPENED
-        ================================================= */
-
         await messagesRef
             .doc(message.id)
             .update({
@@ -3062,10 +3431,6 @@ async function openViewOnceMedia(message) {
                         .serverTimestamp()
             });
 
-
-        /* =================================================
-           LOCAL UPDATE
-        ================================================= */
 
         const localMessage =
             allMessages.find(
@@ -3581,7 +3946,38 @@ if (deleteConfirmOverlay) {
 
                 deleteConfirmOverlay.style.display =
                     "none";
+
+                deleteConfirmOverlay.dataset.mode =
+                    "";
+
+                selectedMessageId =
+                    null;
+
+                selectedMessageData =
+                    null;
+
+
+                const title =
+                    deleteConfirmOverlay.querySelector(
+                        "h3"
+                    );
+
+                const text =
+                    deleteConfirmOverlay.querySelector(
+                        "p"
+                    );
+
+
+                if (title)
+                    title.textContent =
+                        "حذف الرسالة";
+
+
+                if (text)
+                    text.textContent =
+                        "هل أنت متأكد أنك تريد حذف الرسالة؟";
             }
+
         }
     );
 }
@@ -3600,6 +3996,7 @@ if (chatMenuOverlay) {
 
                 closeChatMenu();
             }
+
         }
     );
 }
@@ -3618,6 +4015,7 @@ if (userInfoOverlay) {
 
                 closeUserInfo();
             }
+
         }
     );
 }
@@ -3637,8 +4035,20 @@ if (mediaViewer) {
                 if (closeMediaViewer)
                     closeMediaViewer.click();
             }
+
         }
     );
+}
+
+
+/* =========================================================
+   DELETE CONFIRM MODE RESET
+========================================================= */
+
+if (deleteConfirmOverlay) {
+
+    deleteConfirmOverlay.dataset.mode =
+        "";
 }
 
 
@@ -3674,6 +4084,9 @@ if (
 
             currentUser =
                 user;
+
+            window.currentUser =
+                currentUser;
 
 
             try {
