@@ -383,7 +383,7 @@ body {
 
 
 /* =========================================================
-   05 — MESSAGES AREA
+   05 — MESSAGES AREA (معدل لمنع اختفاء آخر رسالة)
 ========================================================= */
 
 .messages-area {
@@ -396,7 +396,8 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
 
-    padding: 14px 10px 85px;
+    /* الـ Padding من تحت تم زيادة قيمته لـ 100px لمنع اختفاء الرسالة تحت شريط الإدخال */
+    padding: 14px 10px 100px;
 
     display: flex;
 
@@ -2211,7 +2212,7 @@ button {
     }
 
     .messages-area {
-        padding: 10px 7px 85px;
+        padding: 10px 7px 100px;
     }
 
     .message-bubble {
