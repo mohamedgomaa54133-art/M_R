@@ -2498,6 +2498,32 @@ button {
     }
 
 }
+/* =========================================================
+   FIX FOR BUTTON CLICKS (STICKER & PLUS BUTTONS)
+========================================================= */
+
+/* رفع طبقة الأزرار وتأكيد التفاعل مع الضغط */
+.emoji-btn,
+.message-action-btn,
+.send-message-btn {
+    position: relative;
+    z-index: 105 !important;
+    pointer-events: auto !important;
+}
+
+/* ضمان عدم حجب شريط الإدخال للأزرار */
+.message-input-box {
+    position: relative;
+    z-index: 101;
+}
+
+/* ضمان عدم تغطية اللوحات المنسدلة على زرار الإرسال والمرفقات */
+.attachment-panel,
+.emoji-panel,
+.sticker-panel {
+    z-index: 300 !important;
+}
+
 
 /* =========================================================
    END OF CHAT-STYLE.CSS
