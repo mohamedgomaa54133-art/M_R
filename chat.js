@@ -72,6 +72,16 @@ const messageInput =
 const sendMessageBtn =
     document.getElementById("sendMessageBtn");
 
+/* elements للمرفقات والدبوس */
+const attachBtn = 
+    document.getElementById("attachBtn") || document.getElementById("pinBtn") || document.getElementById("attachmentBtn");
+
+const mediaMenu = 
+    document.getElementById("mediaMenu") || document.getElementById("attachMenu");
+
+const fileInput = 
+    document.getElementById("fileInput") || document.getElementById("mediaInput");
+
 
 /* =========================================================
    HEADER
@@ -1916,8 +1926,192 @@ window.saveChatMessage =
 
 
 /* =========================================================
-   SEND TEXT
+   SEND TEXT & FORM SUBMIT
 ========================================================= */
+
+async function handleSendMessage() {
+
+    if (!currentUser)
+        return;
+
+
+    const text =
+        messageInput
+            ? messageInput.value.trim()
+            : "";
+
+
+    if (!text)
+        return;
+
+
+    if (editingMessageId) {
+
+        try {
+
+            await messagesRef
+                .doc(
+                    editingMessageId
+                )
+                .update({
+
+                    text:
+                        text,
+
+                    edited:
+                        true,
+
+                    editedAt:
+                        firebase.firestore
+                            .FieldValue
+                            .serverTimestamp()
+
+                });
+
+
+            editingMessageId =
+                null;
+
+
+            messageInput.value =
+                "";
+
+
+            updateSendButton();
+
+            autoResizeTextarea();
+
+            scrollToBottom();
+
+
+        } catch (error) {
+
+            console.error(
+                "EDIT ERROR:",
+                error
+            );
+
+            alert(
+                "فشل تعديل الرسالة:\n" +
+                error.message
+            );
+        }
+
+        return;
+    }
+
+
+    const data = {
+
+        senderId:
+            currentUser.uid,
+
+        senderName:
+            getUserName(
+                currentUserProfile,
+                currentUser
+            ),
+
+        senderEmail:
+            currentUser.email ||
+            "",
+
+        type:
+            "text",
+
+        text:
+            text,
+
+        createdAt:
+            firebase.firestore
+                .FieldValue
+                .serverTimestamp(),
+
+        edited:
+            false,
+
+        deleted:
+            false,
+
+        pinned:
+            false,
+
+        readBy: {
+
+            [currentUser.uid]:
+                true
+        },
+
+        hiddenFor:
+            {}
+
+    };
+
+
+    if (replyToMessage) {
+
+        data.replyTo = {
+
+            messageId:
+                replyToMessage.id,
+
+            senderId:
+                replyToMessage.senderId,
+
+            senderName:
+                replyToMessage.senderName ||
+                "",
+
+            text:
+                getMessagePreviewText(
+                    replyToMessage
+                )
+        };
+    }
+
+
+    // 1. إظهار الرسالة فوراً في الواجهة لتفادي تأخير الـ 8 ثوانٍ
+    const optimisticTempId = "temp_" + Date.now();
+    const optimisticMessage = {
+        id: optimisticTempId,
+        ...data,
+        createdAt: { toMillis: () => Date.now() }
+    };
+
+    renderMessage(optimisticMessage);
+
+    // 2. تصفير المدخلات وإعادة ضبط الحجم فوراً
+    messageInput.value = "";
+    autoResizeTextarea();
+    clearReply();
+    scrollToBottom();
+
+    try {
+
+        // 3. الإرسال إلى Firestore في الخلفية
+        await messagesRef.add(
+            data
+        );
+
+    } catch (error) {
+
+        console.error(
+            "SEND ERROR:",
+            error
+        );
+
+        // إزالة الرسالة المؤقتة في حالة وجود خطأ
+        const tempEl = document.querySelector(`[data-message-id="${optimisticTempId}"]`);
+        if (tempEl) tempEl.remove();
+
+        alert(
+            "فشل إرسال الرسالة:\n" +
+            error.message
+        );
+
+    }
+}
+
 
 if (sendMessageBtn) {
 
@@ -1926,199 +2120,74 @@ if (sendMessageBtn) {
     sendMessageBtn.addEventListener("mousedown", preventBlur);
 
     sendMessageBtn.addEventListener("touchstart", preventBlur);
+
+    sendMessageBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        handleSendMessage();
+    });
 }
 
 if (messageForm) {
 
     messageForm.addEventListener(
         "submit",
-        async function (event) {
+        function (event) {
 
             event.preventDefault();
 
+            handleSendMessage();
 
-            if (!currentUser)
-                return;
-
-
-            const text =
-                messageInput
-                    ? messageInput.value.trim()
-                    : "";
-
-
-            if (!text)
-                return;
-
-
-            if (editingMessageId) {
-
-                try {
-
-                    await messagesRef
-                        .doc(
-                            editingMessageId
-                        )
-                        .update({
-
-                            text:
-                                text,
-
-                            edited:
-                                true,
-
-                            editedAt:
-                                firebase.firestore
-                                    .FieldValue
-                                    .serverTimestamp()
-
-                        });
-
-
-                    editingMessageId =
-                        null;
-
-
-                    messageInput.value =
-                        "";
-
-
-                    updateSendButton();
-
-                    autoResizeTextarea();
-
-                    scrollToBottom();
-
-
-                } catch (error) {
-
-                    console.error(
-                        "EDIT ERROR:",
-                        error
-                    );
-
-                    alert(
-                        "فشل تعديل الرسالة:\n" +
-                        error.message
-                    );
-                }
-
-                return;
-            }
-
-
-            const data = {
-
-                senderId:
-                    currentUser.uid,
-
-                senderName:
-                    getUserName(
-                        currentUserProfile,
-                        currentUser
-                    ),
-
-                senderEmail:
-                    currentUser.email ||
-                    "",
-
-                type:
-                    "text",
-
-                text:
-                    text,
-
-                createdAt:
-                    firebase.firestore
-                        .FieldValue
-                        .serverTimestamp(),
-
-                edited:
-                    false,
-
-                deleted:
-                    false,
-
-                pinned:
-                    false,
-
-                readBy: {
-
-                    [currentUser.uid]:
-                        true
-                },
-
-                hiddenFor:
-                    {}
-
-            };
-
-
-            if (replyToMessage) {
-
-                data.replyTo = {
-
-                    messageId:
-                        replyToMessage.id,
-
-                    senderId:
-                        replyToMessage.senderId,
-
-                    senderName:
-                        replyToMessage.senderName ||
-                        "",
-
-                    text:
-                        getMessagePreviewText(
-                            replyToMessage
-                        )
-                };
-            }
-
-
-            // 1. إظهار الرسالة فوراً في الواجهة لتفادي تأخير الـ 8 ثوانٍ
-            const optimisticTempId = "temp_" + Date.now();
-            const optimisticMessage = {
-                id: optimisticTempId,
-                ...data,
-                createdAt: { toMillis: () => Date.now() }
-            };
-
-            renderMessage(optimisticMessage);
-
-            // 2. تصفير المدخلات وإعادة ضبط الحجم فوراً
-            messageInput.value = "";
-            autoResizeTextarea();
-            clearReply();
-            scrollToBottom();
-
-            try {
-
-                // 3. الإرسال إلى Firestore في الخلفية
-                await messagesRef.add(
-                    data
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "SEND ERROR:",
-                    error
-                );
-
-                // إزالة الرسالة المؤقتة في حالة وجود خطأ
-                const tempEl = document.querySelector(`[data-message-id="${optimisticTempId}"]`);
-                if (tempEl) tempEl.remove();
-
-                alert(
-                    "فشل إرسال الرسالة:\n" +
-                    error.message
-                );
-
-            }
         }
     );
 }
+
+
+/* =========================================================
+   ATTACHMENT / PIN BUTTON LOGIC & OVERLAY ELEVATION
+========================================================= */
+
+if (attachBtn) {
+
+    attachBtn.addEventListener("click", function (event) {
+
+        event.stopPropagation();
+
+        if (mediaMenu) {
+
+            // ضمان إظهار القائمة فوق شريط الإرسال وتنسيق موقعها
+            mediaMenu.style.zIndex = "99999";
+            mediaMenu.style.position = "absolute";
+            mediaMenu.style.bottom = "70px"; // تظهر فوق الشريط فوراً
+
+            const isHidden = mediaMenu.style.display === "none" || !mediaMenu.style.display;
+
+            mediaMenu.style.display = isHidden ? "flex" : "none";
+
+        } else if (fileInput) {
+
+            // في حالة عدم وجود قائمة وإطلاق اختيار الملفات مباشرة
+            fileInput.click();
+
+        }
+
+    });
+
+}
+
+// إغلاق قائمة المرفقات عند الضغط خارجها
+document.addEventListener("click", function (event) {
+
+    if (mediaMenu && mediaMenu.style.display !== "none") {
+
+        if (!mediaMenu.contains(event.target) && event.target !== attachBtn) {
+
+            mediaMenu.style.display = "none";
+
+        }
+
+    }
+
+});
 
 
 /* =========================================================
@@ -2283,6 +2352,8 @@ function openMessageActions(message) {
 
     if (messageActionOverlay) {
 
+        messageActionOverlay.style.zIndex = "100000";
+
         messageActionOverlay.style.display =
             "flex";
     }
@@ -2371,6 +2442,8 @@ if (deleteMessageBtn) {
 
 
             if (deleteConfirmOverlay) {
+
+                deleteConfirmOverlay.style.zIndex = "100000";
 
                 deleteConfirmOverlay.style.display =
                     "flex";
@@ -2967,6 +3040,8 @@ function openMedia(type, url) {
     }
 
 
+    mediaViewer.style.zIndex = "100000";
+
     mediaViewer.style.display =
         "flex";
 }
@@ -3134,6 +3209,8 @@ async function openViewOnceMedia(message) {
             );
         }
 
+
+        viewOnceViewer.style.zIndex = "100000";
 
         viewOnceViewer.style.display =
             "flex";
@@ -3307,6 +3384,8 @@ if (chatMenuBtn) {
 
             if (chatMenuOverlay) {
 
+                chatMenuOverlay.style.zIndex = "100000";
+
                 chatMenuOverlay.style.display =
                     "flex";
             }
@@ -3457,6 +3536,8 @@ function openUserInfo() {
 
 
     if (userInfoOverlay) {
+
+        userInfoOverlay.style.zIndex = "100000";
 
         userInfoOverlay.style.display =
             "flex";
