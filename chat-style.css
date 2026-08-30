@@ -19,10 +19,8 @@ html,
 body {
     width: 100%;
     height: 100%;
-    height: 100dvh;
     margin: 0;
     padding: 0;
-    overflow: hidden;
 }
 
 body {
@@ -33,6 +31,8 @@ body {
 
     background: #0f1115;
     color: #ffffff;
+
+    overflow: hidden;
 }
 
 
@@ -42,16 +42,14 @@ body {
 
 .chat-body {
     width: 100%;
-    height: 100%;
-    height: 100dvh;
+    height: 100vh;
 
     background: #0f1115;
 }
 
 .chat-page {
     width: 100%;
-    height: 100%;
-    height: 100dvh;
+    height: 100vh;
 
     display: flex;
     flex-direction: column;
@@ -84,7 +82,6 @@ body {
 
     position: relative;
     z-index: 20;
-    flex-shrink: 0;
 }
 
 
@@ -318,7 +315,6 @@ body {
     position: relative;
 
     z-index: 15;
-    flex-shrink: 0;
 }
 
 .pinned-icon {
@@ -400,7 +396,7 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
 
-    padding: 14px 10px 14px;
+    padding: 14px 10px 85px;
 
     display: flex;
 
@@ -822,7 +818,6 @@ body {
     position: relative;
 
     z-index: 35;
-    flex-shrink: 0;
 }
 
 .reply-bar-line {
@@ -893,14 +888,12 @@ body {
 ========================================================= */
 
 .attachment-panel {
-    position: absolute;
+    position: fixed;
 
     left: 8px;
     right: 8px;
 
-    bottom: 100%;
-
-    margin-bottom: 8px;
+    bottom: 70px;
 
     max-height: 300px;
 
@@ -915,7 +908,7 @@ body {
 
     padding: 10px;
 
-    z-index: 200;
+    z-index: 300 !important;
 
     box-shadow:
         0 12px 35px
@@ -983,14 +976,12 @@ body {
 ========================================================= */
 
 .emoji-panel {
-    position: absolute;
+    position: fixed;
 
     left: 8px;
     right: 8px;
 
-    bottom: 100%;
-
-    margin-bottom: 8px;
+    bottom: 70px;
 
     max-height: 300px;
 
@@ -1005,7 +996,7 @@ body {
 
     padding: 10px;
 
-    z-index: 200;
+    z-index: 300 !important;
 
     box-shadow:
         0 12px 35px
@@ -1093,14 +1084,12 @@ body {
 ========================================================= */
 
 .sticker-panel {
-    position: absolute;
+    position: fixed;
 
     left: 8px;
     right: 8px;
 
-    bottom: 100%;
-
-    margin-bottom: 8px;
+    bottom: 70px;
 
     max-height: 330px;
 
@@ -1115,7 +1104,7 @@ body {
 
     padding: 10px;
 
-    z-index: 200;
+    z-index: 300 !important;
 
     box-shadow:
         0 12px 35px
@@ -1233,15 +1222,16 @@ body {
 
     border-top: 1px solid #292d35;
 
-    position: relative;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
 
     z-index: 101;
 
     direction: rtl;
 
     box-sizing: border-box;
-
-    flex-shrink: 0;
 }
 
 .voice-recording-info {
@@ -1372,7 +1362,10 @@ body {
 
     border-top: 1px solid #292d35;
 
-    position: relative;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
 
     z-index: 100;
 
@@ -1418,6 +1411,8 @@ body {
 
     transition:
         border-color 0.15s ease;
+
+    position: relative;
 }
 
 .message-input-box:focus-within {
@@ -1504,6 +1499,10 @@ body {
 
     align-items: center;
     justify-content: center;
+
+    flex-shrink: 0;
+
+    pointer-events: auto !important;
 }
 
 .emoji-btn:active {
@@ -1539,6 +1538,10 @@ body {
     justify-content: center;
 
     cursor: pointer;
+
+    flex-shrink: 0;
+
+    pointer-events: auto !important;
 }
 
 .message-action-btn:active {
@@ -1575,9 +1578,13 @@ body {
 
     cursor: pointer;
 
+    flex-shrink: 0;
+
     transition:
         transform 0.15s ease,
         background 0.15s ease;
+
+    pointer-events: auto !important;
 }
 
 .send-message-btn:active {
@@ -1724,7 +1731,6 @@ body {
     display: flex;
 
     align-items: center;
-
     justify-content: center;
 
     background: #30343c;
@@ -2205,7 +2211,7 @@ button {
     }
 
     .messages-area {
-        padding: 10px 7px 14px;
+        padding: 10px 7px 85px;
     }
 
     .message-bubble {
@@ -2498,32 +2504,6 @@ button {
     }
 
 }
-/* =========================================================
-   FIX FOR BUTTON CLICKS (STICKER & PLUS BUTTONS)
-========================================================= */
-
-/* رفع طبقة الأزرار وتأكيد التفاعل مع الضغط */
-.emoji-btn,
-.message-action-btn,
-.send-message-btn {
-    position: relative;
-    z-index: 105 !important;
-    pointer-events: auto !important;
-}
-
-/* ضمان عدم حجب شريط الإدخال للأزرار */
-.message-input-box {
-    position: relative;
-    z-index: 101;
-}
-
-/* ضمان عدم تغطية اللوحات المنسدلة على زرار الإرسال والمرفقات */
-.attachment-panel,
-.emoji-panel,
-.sticker-panel {
-    z-index: 300 !important;
-}
-
 
 /* =========================================================
    END OF CHAT-STYLE.CSS
