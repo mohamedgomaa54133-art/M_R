@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Chat</title>
+
+    <!-- ================= CSS ================= -->
+
+    <link
+        rel="stylesheet"
+        href="chat-style.css"
+    >
+</head>
+
+
+<body class="chat-body">
+
+<main class="chat-page">
+
+    <!-- ================= HEADER ================= -->
+
+    <header class="chat-header">
+
+        <button
+            type="button"
+            class="chat-user"
+            id="chatUserBtn"
+        >
+
+            <div class="chat-user-photo">
+
+                <img
+                    id="chatUserPhoto"
+                    src=""
+                    alt=""
+                >
+
+                <span id="chatUserPhotoFallback">
+                    ر
+                </span>
+
+                <span
+                    class="online-dot"
+                    id="onlineDot"
+                    style="display:none;"
+                ></span>
+
+            </div>
+
+            <div class="chat-user-info">
+
+                <h1 id="chatUserName">
+                    رحمه
+                </h1>
+
+                <p id="chatUserStatus">
+                    غير متصل
+                </p>
+
+            </div>
+
+        </button>
+
+
+        <div class="chat-header-actions">
+
+            <button
+                type="button"
+                class="chat-icon-btn"
+                id="chatMenuBtn"
+                aria-label="القائمة"
+            >
+                ⋮
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================= PINNED ================= -->
+
+    <div
+        class="pinned-bar"
+        id="pinnedBar"
+        style="display:none;"
+    >
+
+        <div class="pinned-icon">
+            📌
+        </div>
+
+        <div class="pinned-content">
+
+            <span>
+                رسالة مثبتة
+            </span>
+
+            <p id="pinnedText">
+                -
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            class="small-icon-btn"
+            id="closePinnedBtn"
+            aria-label="إغلاق"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <!-- ================= MESSAGES ================= -->
+
+    <section
+        class="messages-area"
+        id="messagesArea"
+    >
+
+        <div
+            class="chat-empty"
+            id="chatEmpty"
+        >
+
+            <div class="chat-empty-icon">
+                💬
+            </div>
+
+            <h2>
+                ابدأ المحادثة
+            </h2>
+
+            <p>
+                أرسل أول رسالة لبدء الحديث.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= REPLY ================= -->
+
+    <div
+        class="reply-bar"
+        id="replyBar"
+        style="display:none;"
+    >
+
+        <div class="reply-bar-line"></div>
+
+        <div class="reply-bar-content">
+
+            <strong id="replyBarName">
+                الرد
+            </strong>
+
+            <span id="replyBarText">
+                -
+            </span>
+
+        </div>
+
+        <button
+            type="button"
+            class="reply-cancel-btn"
+            id="cancelReplyBtn"
+            aria-label="إلغاء الرد"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <!-- ================= ATTACHMENTS ================= -->
+
+    <div
+        class="attachment-panel"
+        id="attachmentPanel"
+        style="display:none;"
+    >
+
+        <button
+            type="button"
+            class="attachment-option"
+            id="imageOption"
+        >
+            <span class="attachment-option-icon">
+                🖼️
+            </span>
+
+            <span>
+                صورة
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            class="attachment-option"
+            id="videoOption"
+        >
+            <span class="attachment-option-icon">
+                🎥
+            </span>
+
+            <span>
+                فيديو
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            class="attachment-option"
+            id="viewOnceOption"
+        >
+            <span class="attachment-option-icon">
+                ①
+            </span>
+
+            <span>
+                مشاهدة مرة
+            </span>
+        </button>
+
+
+        <input
+            type="file"
+            id="imageInput"
+            accept="image/*"
+            hidden
+        >
+
+        <input
+            type="file"
+            id="videoInput"
+            accept="video/*"
+            hidden
+        >
+
+    </div>
+
+
+    <!-- ================= EMOJI ================= -->
+
+    <div
+        class="emoji-panel"
+        id="emojiPanel"
+        style="display:none;"
+    >
+
+        <div class="emoji-panel-header">
+
+            <span>
+                Emoji
+            </span>
+
+            <button
+                type="button"
+                id="closeEmojiBtn"
+                aria-label="إغلاق"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div
+            class="emoji-list"
+            id="emojiList"
+        >
+            😀 😃 😄 😁 😆 😅 😂 🤣
+            😊 😇 🙂 🙃 😉 😌 😍 🥰
+            😘 😗 😙 😚 😋 😛 😝 😜
+            🤪 🤨 🧐 🤓 😎 🤩 🥳
+            😏 😒 😞 😔 😟 😕 🙁
+            ☹️ 😣 😖 😫 😩 🥺
+            😢 😭 😤 😠 😡 🤬
+            ❤️ 🖤 🤍 💙 💔 ❤️‍🔥
+            👍 👎 👌 ✌️ 🤝 🙏
+            👋 💪 👀 🔥 🎉 😂
+        </div>
+
+    </div>
+
+
+    <!-- ================= STICKERS ================= -->
+
+    <div
+        class="sticker-panel"
+        id="stickerPanel"
+        style="display:none;"
+    >
+
+        <div class="sticker-panel-header">
+
+            <span>
+                Stickers
+            </span>
+
+            <button
+                type="button"
+                id="closeStickerBtn"
+                aria-label="إغلاق"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div
+            class="sticker-grid"
+            id="stickerGrid"
+        >
+
+            <button type="button" class="sticker-item" data-sticker="1">
+                <img src="1.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="2">
+                <img src="2.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="3">
+                <img src="3.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="4">
+                <img src="4.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="5">
+                <img src="5.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="6">
+                <img src="6.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="7">
+                <img src="7.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="8">
+                <img src="8.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="9">
+                <img src="9.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="10">
+                <img src="10.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="11">
+                <img src="11.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="12">
+                <img src="12.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="13">
+                <img src="13.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="14">
+                <img src="14.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="15">
+                <img src="15.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="16">
+                <img src="16.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="17">
+                <img src="17.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="18">
+                <img src="18.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="19">
+                <img src="19.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="20">
+                <img src="20.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="21">
+                <img src="21.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="22">
+                <img src="22.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="23">
+                <img src="23.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="24">
+                <img src="24.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="25">
+                <img src="25.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="26">
+                <img src="26.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="27">
+                <img src="27.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="28">
+                <img src="28.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="29">
+                <img src="29.png" alt="">
+            </button>
+
+            <button type="button" class="sticker-item" data-sticker="30">
+                <img src="30.png" alt="">
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= VOICE ================= -->
+
+    <div
+        class="voice-recording-bar"
+        id="voiceRecordingBar"
+        style="display:none;"
+    >
+
+        <button
+            type="button"
+            class="voice-cancel-btn"
+            id="cancelRecordingBtn"
+        >
+            ×
+        </button>
+
+        <div class="voice-recording-info">
+
+            <span class="voice-recording-dot"></span>
+
+            <span>
+                جاري التسجيل...
+            </span>
+
+            <strong id="recordingTime">
+                00:00
+            </strong>
+
+        </div>
+
+        <button
+            type="button"
+            class="voice-send-btn"
+            id="sendRecordingBtn"
+        >
+            ➤
+        </button>
+
+    </div>
+
+
+    <!-- ================= MESSAGE INPUT ================= -->
+
+    <form
+        class="message-area"
+        id="messageForm"
+    >
+
+        <button
+            type="button"
+            class="message-action-btn"
+            id="attachmentBtn"
+            aria-label="المرفقات"
+        >
+            ＋
+        </button>
+
+
+        <div class="message-input-box">
+
+            <button
+                type="button"
+                class="emoji-btn"
+                id="emojiBtn"
+                aria-label="Emoji"
+            >
+                😊
+            </button>
+
+
+            <textarea
+                id="messageInput"
+                rows="1"
+                maxlength="5000"
+                placeholder="اكتب رسالة..."
+                autocomplete="off"
+            ></textarea>
+
+
+            <button
+                type="button"
+                class="emoji-btn"
+                id="stickerBtn"
+                aria-label="Stickers"
+            >
+                🧸
+            </button>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="message-action-btn"
+            id="recordBtn"
+            aria-label="تسجيل صوت"
+        >
+            🎙️
+        </button>
+
+
+        <button
+            type="submit"
+            class="send-message-btn"
+            id="sendMessageBtn"
+        >
+            ➤
+        </button>
+
+    </form>
+
+</main>
+
+
+<!-- ================= USER INFO ================= -->
+
+<div
+    class="user-info-overlay"
+    id="userInfoOverlay"
+    style="display:none;"
+>
+
+    <div class="user-info-popup">
+
+        <button
+            type="button"
+            class="popup-close-btn"
+            id="closeUserInfoBtn"
+        >
+            ×
+        </button>
+
+        <div class="popup-user-photo">
+
+            <img
+                id="popupUserPhoto"
+                src=""
+                alt=""
+            >
+
+            <span id="popupUserFallback">
+                ر
+            </span>
+
+        </div>
+
+        <h2 id="popupUserName">
+            رحمه
+        </h2>
+
+        <p id="popupUserEmail">
+            -
+        </p>
+
+        <p id="popupUserStatus">
+            غير متصل
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ================= MESSAGE ACTIONS ================= -->
+
+<div
+    class="message-action-overlay"
+    id="messageActionOverlay"
+    style="display:none;"
+>
+
+    <div class="message-action-menu">
+
+        <button
+            type="button"
+            class="message-action-item"
+            id="replyMessageBtn"
+        >
+            ↩️
+            <span>الرد</span>
+        </button>
+
+
+        <button
+            type="button"
+            class="message-action-item"
+            id="editMessageBtn"
+            style="display:none;"
+        >
+            ✏️
+            <span>تعديل الرسالة</span>
+        </button>
+
+
+        <button
+            type="button"
+            class="message-action-item"
+            id="pinMessageBtn"
+        >
+            📌
+            <span>تثبيت الرسالة</span>
+        </button>
+
+
+        <button
+            type="button"
+            class="message-action-item danger"
+            id="deleteMessageBtn"
+        >
+            🗑️
+            <span>حذف لدي</span>
+        </button>
+
+
+        <button
+            type="button"
+            class="message-action-item danger"
+            id="deleteForEveryoneBtn"
+            style="display:none;"
+        >
+            🗑️
+            <span>حذف لدى الجميع</span>
+        </button>
+
+
+        <button
+            type="button"
+            class="message-action-cancel"
+            id="cancelMessageActionBtn"
+        >
+            إلغاء
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ================= DELETE CONFIRM ================= -->
+
+<div
+    class="delete-confirm-overlay"
+    id="deleteConfirmOverlay"
+    style="display:none;"
+>
+
+    <div class="delete-confirm-box">
+
+        <div class="delete-confirm-icon">
+            🗑️
+        </div>
+
+        <h3>
+            حذف الرسالة
+        </h3>
+
+        <p>
+            هل أنت متأكد أنك تريد حذف الرسالة؟
+        </p>
+
+        <div class="delete-confirm-buttons">
+
+            <button
+                type="button"
+                id="cancelDeleteBtn"
+            >
+                إلغاء
+            </button>
+
+            <button
+                type="button"
+                id="confirmDeleteBtn"
+                class="danger-confirm"
+            >
+                حذف
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= MEDIA VIEWER ================= -->
+
+<div
+    class="media-preview-overlay"
+    id="mediaViewer"
+    style="display:none;"
+>
+
+    <div class="media-preview-box">
+
+        <button
+            type="button"
+            class="media-preview-close"
+            id="closeMediaViewer"
+        >
+            ×
+        </button>
+
+        <div
+            class="media-preview-content"
+            id="mediaViewerContent"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= VIEW ONCE ================= -->
+
+<div
+    class="media-preview-overlay"
+    id="viewOnceViewer"
+    style="display:none;"
+>
+
+    <div class="media-preview-box">
+
+        <button
+            type="button"
+            class="media-preview-close"
+            id="closeViewOnceViewer"
+        >
+            ×
+        </button>
+
+        <div
+            class="media-preview-content"
+            id="viewOnceContent"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= CHAT MENU ================= -->
+
+<div
+    class="chat-menu-overlay"
+    id="chatMenuOverlay"
+    style="display:none;"
+>
+
+    <div class="chat-menu">
+
+        <button
+            type="button"
+            class="chat-menu-item"
+            id="pinnedMenuBtn"
+        >
+            <span>📌</span>
+            الرسائل المثبتة
+        </button>
+
+
+        <button
+            type="button"
+            class="chat-menu-item danger"
+            id="logoutBtn"
+        >
+            <span>↪</span>
+            تسجيل الخروج
+        </button>
+
+
+        <button
+            type="button"
+            class="chat-menu-cancel"
+            id="closeChatMenuBtn"
+        >
+            إلغاء
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     FIREBASE
+===================================================== -->
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+
+<!-- =====================================================
+     PROJECT JS FILES
+===================================================== -->
+
+<script src="firebase.js"></script>
+
+<script src="auth.js"></script>
+
+<script src="presence.js"></script>
+
+
+<!-- =====================================================
+     SUPABASE
+===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<!-- =====================================================
+     UPLOAD
+===================================================== -->
+
+<script src="upload.js"></script>
+
+
+<!-- =====================================================
+     AUDIO
+===================================================== -->
+
+<script src="audio.js"></script>
+
+<script src="stickers.js"></script>
+
+<script src="reaction.js"></script>
+
+<script src="chat.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!-- =========================================================
+     PROFILE.HTML
+     START OF FILE
+========================================================= -->
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Profile</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <main class="profile-page">
+
+        <section class="profile-box">
+
+            <!-- =================================================
+                 START — PROFILE PHOTO
+            ================================================== -->
+
+            <div class="profile-photo-area">
+
+                <label
+                    for="profilePhotoInput"
+                    class="profile-photo"
+                    id="profilePhotoButton">
+
+                    <img
+                        id="profilePhotoPreview"
+                        src=""
+                        alt="الصورة الشخصية">
+
+                    <span id="profilePhotoPlus">+</span>
+
+                </label>
+
+                <input
+                    type="file"
+                    id="profilePhotoInput"
+                    accept="image/*"
+                    hidden
+                >
+
+                <p>
+                    الصورة الشخصية
+                </p>
+
+                <small>
+                    اضغط على الصورة لإضافتها
+                </small>
+
+            </div>
+
+            <!-- =================================================
+                 END — PROFILE PHOTO
+            ================================================== -->
+
+
+            <h1>إعداد الملف الشخصي</h1>
+
+            <p class="profile-subtitle">
+                أكمل بياناتك الأساسية للمتابعة
+            </p>
+
+
+            <form id="profileForm">
+
+                <!-- =================================================
+                     START — DISPLAY NAME
+                ================================================== -->
+
+                <div class="input-group">
+
+                    <label for="username">
+                        الاسم الظاهر
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        placeholder="اكتب الاسم الذي سيظهر"
+                        maxlength="30"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+                <!-- =================================================
+                     END — DISPLAY NAME
+                ================================================== -->
+
+
+                <!-- =================================================
+                     START — USERNAME
+                ================================================== -->
+
+                <div class="input-group">
+
+                    <label for="userHandle">
+                        اسم المستخدم
+                    </label>
+
+                    <div class="username-input">
+
+                        <span>@</span>
+
+                        <input
+                            type="text"
+                            id="userHandle"
+                            placeholder="username"
+                            maxlength="20"
+                            autocomplete="off"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <!-- =================================================
+                     END — USERNAME
+                ================================================== -->
+
+
+                <!-- =================================================
+                     START — BIRTH DATE
+                ================================================== -->
+
+                <div class="input-group">
+
+                    <label>
+                        تاريخ الميلاد
+                    </label>
+
+                    <div class="birth-date">
+
+                        <select id="birthDay" required>
+                            <option value="">اليوم</option>
+                        </select>
+
+                        <select id="birthMonth" required>
+
+                            <option value="">
+                                الشهر
+                            </option>
+
+                            <option value="1">يناير</option>
+                            <option value="2">فبراير</option>
+                            <option value="3">مارس</option>
+                            <option value="4">أبريل</option>
+                            <option value="5">مايو</option>
+                            <option value="6">يونيو</option>
+                            <option value="7">يوليو</option>
+                            <option value="8">أغسطس</option>
+                            <option value="9">سبتمبر</option>
+                            <option value="10">أكتوبر</option>
+                            <option value="11">نوفمبر</option>
+                            <option value="12">ديسمبر</option>
+
+                        </select>
+
+                        <select id="birthYear" required>
+                            <option value="">السنة</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <!-- =================================================
+                     END — BIRTH DATE
+                ================================================== -->
+
+
+                <button
+                    type="submit"
+                    id="saveProfileBtn">
+
+                    حفظ والمتابعة
+
+                </button>
+
+
+                <p
+                    id="profileMessage"
+                    class="profile-message">
+                </p>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+         FIREBASE SDK
+    ========================================================== -->
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+
+    <!-- =========================================================
+         SUPABASE SDK
+    ========================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+    <!-- =========================================================
+         PROJECT FILES
+    ========================================================== -->
+
+    <script src="firebase.js"></script>
+
+    <script src="profile.js"></script>
+
+
+</body>
+
+</html>
+
+<!-- =========================================================
+     PROFILE.HTML
+     END OF FILE
+========================================================= -->
