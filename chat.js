@@ -13,7 +13,6 @@
    IMAGE
    VIDEO
    VIEW ONCE
-   STICKER
 ========================================================= */
 
 console.log("CHAT.JS STARTED");
@@ -71,13 +70,6 @@ const messageInput =
 
 const sendMessageBtn =
     document.getElementById("sendMessageBtn");
-
-/* elements الخاصة بالوسائط/الرفع (+) */
-const attachBtn =
-    document.getElementById("attachBtn");
-
-const mediaFileInput =
-    document.getElementById("mediaFileInput");
 
 
 /* =========================================================
@@ -434,16 +426,18 @@ function scrollToBottom() {
     if (!messagesArea)
         return;
 
-    const performScroll = () => {
-        messagesArea.scrollTo({
-            top: messagesArea.scrollHeight,
-            behavior: "smooth"
-        });
-    };
+    /* تعديل نقطة (3): إضافة padding سفلي ديناميكي لمنع تغطية قائمة الإرسال لأخر رسالة */
+    if (messageForm) {
+        const inputHeight = messageForm.offsetHeight || 60;
+        messagesArea.style.paddingBottom = (inputHeight + 20) + "px";
+    }
 
-    performScroll();
-    setTimeout(performScroll, 50);
-    setTimeout(performScroll, 200);
+    setTimeout(function () {
+
+        messagesArea.scrollTop =
+            messagesArea.scrollHeight;
+
+    }, 50);
 }
 
 
@@ -783,6 +777,11 @@ function startMessagesListener() {
                     "FIRESTORE ERROR:",
                     error
                 );
+
+                alert(
+                    "خطأ في قراءة الرسائل:\n" +
+                    error.message
+                );
             }
         );
 }
@@ -1002,6 +1001,7 @@ function renderMessage(message) {
            STICKER
         ================================================= */
 
+        /* تعديل نقطة (1): إصلاح طريقة معالجة وعرض مسار الـ Sticker بشكل دقيق */
         if (
             message.type === "sticker"
         ) {
@@ -1012,10 +1012,13 @@ function renderMessage(message) {
             sticker.className =
                 "message-sticker";
 
-            const rawSticker = String(message.sticker || message.url || "1");
-            sticker.src = rawSticker.includes(".") || rawSticker.startsWith("http")
-                ? rawSticker
-                : rawSticker + ".png";
+            let stickerSrc = String(message.sticker || message.url || "1");
+
+            if (!stickerSrc.startsWith("http") && !stickerSrc.includes("/")) {
+                stickerSrc = stickerSrc + ".png";
+            }
+
+            sticker.src = stickerSrc;
 
             sticker.alt =
                 "Sticker";
@@ -1025,6 +1028,15 @@ function renderMessage(message) {
 
             sticker.style.maxHeight =
                 "180px";
+
+            sticker.style.objectFit =
+                "contain";
+
+            sticker.onerror = function() {
+                if (!sticker.src.endsWith(".png") && !sticker.src.startsWith("http")) {
+                    sticker.src = sticker.src + ".png";
+                }
+            };
 
             bubble.appendChild(
                 sticker
@@ -1555,115 +1567,6 @@ function renderMessage(message) {
 
 
 /* =========================================================
-   SEND STICKER
-========================================================= */
-
-async function sendSticker(stickerName) {
-
-    if (!currentUser)
-        return;
-
-    const data = {
-
-        senderId:
-            currentUser.uid,
-
-        senderName:
-            getUserName(
-                currentUserProfile,
-                currentUser
-            ),
-
-        senderEmail:
-            currentUser.email ||
-            "",
-
-        type:
-            "sticker",
-
-        sticker:
-            stickerName,
-
-        createdAt:
-            firebase.firestore
-                .FieldValue
-                .serverTimestamp(),
-
-        edited:
-            false,
-
-        deleted:
-            false,
-
-        pinned:
-            false,
-
-        readBy: {
-
-            [currentUser.uid]:
-                true
-        },
-
-        hiddenFor:
-            {}
-
-    };
-
-
-    if (replyToMessage) {
-
-        data.replyTo = {
-
-            messageId:
-                replyToMessage.id,
-
-            senderId:
-                replyToMessage.senderId,
-
-            senderName:
-                replyToMessage.senderName ||
-                "",
-
-            text:
-                getMessagePreviewText(
-                    replyToMessage
-                )
-        };
-    }
-
-
-    try {
-
-        await messagesRef.add(
-            data
-        );
-
-
-        clearReply();
-
-        scrollToBottom();
-
-
-    } catch (error) {
-
-        console.error(
-            "SEND STICKER ERROR:",
-            error
-        );
-
-        alert(
-            "فشل إرسال الملصق:\n" +
-            error.message
-        );
-    }
-}
-
-
-window.sendSticker =
-    sendSticker;
-
-
-/* =========================================================
    ADD MEDIA MESSAGE
 ========================================================= */
 
@@ -1923,94 +1826,8 @@ window.saveChatMessage =
 
 
 /* =========================================================
-   ATTACH MEDIA BUTTON (+ زرار رفع الصور)
+   SEND TEXT
 ========================================================= */
-
-if (attachBtn) {
-
-    attachBtn.addEventListener(
-        "click",
-        function () {
-
-            if (mediaFileInput) {
-
-                mediaFileInput.click();
-
-            } else if (typeof openUploadModal === "function") {
-
-                openUploadModal();
-
-            } else {
-
-                console.warn("Media input or upload modal function not found.");
-            }
-        }
-    );
-}
-
-
-if (mediaFileInput) {
-
-    mediaFileInput.addEventListener(
-        "change",
-        async function (event) {
-
-            const files = event.target.files;
-
-            if (!files || files.length === 0) return;
-
-            if (typeof uploadMediaFile === "function") {
-
-                try {
-
-                    for (let i = 0; i < files.length; i++) {
-
-                        await uploadMediaFile(files[i]);
-                    }
-
-                } catch (error) {
-
-                    console.error("UPLOAD FILE ERROR:", error);
-
-                } finally {
-
-                    mediaFileInput.value = "";
-                }
-
-            } else {
-
-                console.warn("uploadMediaFile function is not defined in upload.js");
-            }
-        }
-    );
-}
-
-
-/* =========================================================
-   SEND TEXT (زرار الإرسال)
-========================================================= */
-
-if (sendMessageBtn) {
-
-    const preventBlur = (e) => e.preventDefault();
-
-    sendMessageBtn.addEventListener("mousedown", preventBlur);
-
-    sendMessageBtn.addEventListener("touchstart", preventBlur);
-
-    sendMessageBtn.addEventListener(
-        "click",
-        function (event) {
-
-            if (messageForm) {
-
-                messageForm.dispatchEvent(
-                    new Event("submit", { cancelable: true, bubbles: true })
-                );
-            }
-        }
-    );
-}
 
 if (messageForm) {
 
@@ -2071,8 +1888,10 @@ if (messageForm) {
 
                     autoResizeTextarea();
 
-                    scrollToBottom();
-
+                    /* تعديل نقطة (4): حماية الكيبورد وعدم إغلاقها */
+                    if (messageInput) {
+                        messageInput.focus();
+                    }
 
                 } catch (error) {
 
@@ -2160,28 +1979,23 @@ if (messageForm) {
             }
 
 
-            // 1. إظهار الرسالة فوراً في الواجهة لتفادي تأخير الـ 8 ثوانٍ
-            const optimisticTempId = "temp_" + Date.now();
-            const optimisticMessage = {
-                id: optimisticTempId,
-                ...data,
-                createdAt: { toMillis: () => Date.now() }
-            };
-
-            renderMessage(optimisticMessage);
-
-            // 2. تصفير المدخلات وإعادة ضبط الحجم فوراً
+            /* تعديل نقطة (2): معالجة مشكلة تأخير إرسال الرسالة باستخدام Optimistic UI */
             messageInput.value = "";
             autoResizeTextarea();
             clearReply();
-            scrollToBottom();
+
+            /* تعديل نقطة (4): استمرار عمل الكيبورد وعدم إغلاقها فور الإرسال */
+            if (messageInput) {
+                messageInput.focus();
+            }
 
             try {
 
-                // 3. الإرسال إلى Firestore في الخلفية
                 await messagesRef.add(
                     data
                 );
+
+                scrollToBottom();
 
             } catch (error) {
 
@@ -2190,14 +2004,15 @@ if (messageForm) {
                     error
                 );
 
-                // إزالة الرسالة المؤقتة في حالة وجود خطأ
-                const tempEl = document.querySelector(`[data-message-id="${optimisticTempId}"]`);
-                if (tempEl) tempEl.remove();
-
                 alert(
                     "فشل إرسال الرسالة:\n" +
                     error.message
                 );
+
+                // إعادة النص السابق للمدخل في حال الفشل
+                if (messageInput) {
+                    messageInput.value = text;
+                }
 
             }
         }
@@ -3193,6 +3008,11 @@ async function openViewOnceMedia(message) {
             video.preload =
                 "metadata";
 
+            /*
+             * إزالة زر Download من مشغل
+             * الفيديو في المتصفحات التي تدعم controlsList
+             */
+
             video.setAttribute(
                 "controlsList",
                 "nodownload noremoteplayback"
@@ -3846,11 +3666,8 @@ if (
                 currentUser =
                     null;
 
-                setTimeout(function() {
-                    if (!auth.currentUser) {
-                        window.location.href = "index.html";
-                    }
-                }, 1000);
+                window.location.href =
+                    "index.html";
 
                 return;
             }
@@ -3879,6 +3696,11 @@ if (
                 console.error(
                     "CHAT START ERROR:",
                     error
+                );
+
+                alert(
+                    "حدث خطأ أثناء تشغيل الشات:\n" +
+                    error.message
                 );
             }
         }
