@@ -427,21 +427,16 @@ function scrollToBottom() {
     if (!messagesArea)
         return;
 
-    messagesArea.scrollTop = messagesArea.scrollHeight;
+    const performScroll = () => {
+        messagesArea.scrollTo({
+            top: messagesArea.scrollHeight,
+            behavior: "smooth"
+        });
+    };
 
-    setTimeout(function () {
-
-        messagesArea.scrollTop =
-            messagesArea.scrollHeight;
-
-    }, 50);
-
-    setTimeout(function () {
-
-        messagesArea.scrollTop =
-            messagesArea.scrollHeight;
-
-    }, 200);
+    performScroll();
+    setTimeout(performScroll, 50);
+    setTimeout(performScroll, 200);
 }
 
 
@@ -1924,6 +1919,15 @@ window.saveChatMessage =
    SEND TEXT
 ========================================================= */
 
+if (sendMessageBtn) {
+
+    const preventBlur = (e) => e.preventDefault();
+
+    sendMessageBtn.addEventListener("mousedown", preventBlur);
+
+    sendMessageBtn.addEventListener("touchstart", preventBlur);
+}
+
 if (messageForm) {
 
     messageForm.addEventListener(
@@ -2072,25 +2076,28 @@ if (messageForm) {
             }
 
 
+            // 1. إظهار الرسالة فوراً في الواجهة لتفادي تأخير الـ 8 ثوانٍ
+            const optimisticTempId = "temp_" + Date.now();
+            const optimisticMessage = {
+                id: optimisticTempId,
+                ...data,
+                createdAt: { toMillis: () => Date.now() }
+            };
+
+            renderMessage(optimisticMessage);
+
+            // 2. تصفير المدخلات وإعادة ضبط الحجم فوراً
             messageInput.value = "";
             autoResizeTextarea();
+            clearReply();
+            scrollToBottom();
 
             try {
 
-                if (sendMessageBtn)
-                    sendMessageBtn.disabled =
-                        true;
-
-
+                // 3. الإرسال إلى Firestore في الخلفية
                 await messagesRef.add(
                     data
                 );
-
-
-                clearReply();
-
-                scrollToBottom();
-
 
             } catch (error) {
 
@@ -2099,16 +2106,15 @@ if (messageForm) {
                     error
                 );
 
+                // إزالة الرسالة المؤقتة في حالة وجود خطأ
+                const tempEl = document.querySelector(`[data-message-id="${optimisticTempId}"]`);
+                if (tempEl) tempEl.remove();
+
                 alert(
                     "فشل إرسال الرسالة:\n" +
                     error.message
                 );
 
-            } finally {
-
-                if (sendMessageBtn)
-                    sendMessageBtn.disabled =
-                        false;
             }
         }
     );
