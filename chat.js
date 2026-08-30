@@ -426,12 +426,22 @@ function scrollToBottom() {
     if (!messagesArea)
         return;
 
+    // استدعاء فوري ومزدوج مع التوثيق لضمان هبوط الشاشة للأسفل فوراً
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+
     setTimeout(function () {
 
         messagesArea.scrollTop =
             messagesArea.scrollHeight;
 
     }, 50);
+
+    setTimeout(function () {
+
+        messagesArea.scrollTop =
+            messagesArea.scrollHeight;
+
+    }, 200);
 }
 
 
@@ -772,10 +782,7 @@ function startMessagesListener() {
                     error
                 );
 
-                alert(
-                    "خطأ في قراءة الرسائل:\n" +
-                    error.message
-                );
+                // إلغاء الـ alert لتوفير تجربة سلسة وتجنب مضايقة المستخدم عند الانقطاع اللحظي للشبكة
             }
         );
 }
@@ -1869,6 +1876,8 @@ if (messageForm) {
 
                     autoResizeTextarea();
 
+                    scrollToBottom();
+
 
                 } catch (error) {
 
@@ -1956,6 +1965,10 @@ if (messageForm) {
             }
 
 
+            // تفريغ المدخلات فورياً لاستجابة أسرع للواجهة
+            messageInput.value = "";
+            autoResizeTextarea();
+
             try {
 
                 if (sendMessageBtn)
@@ -1968,12 +1981,7 @@ if (messageForm) {
                 );
 
 
-                messageInput.value =
-                    "";
-
                 clearReply();
-
-                autoResizeTextarea();
 
                 scrollToBottom();
 
@@ -3647,8 +3655,12 @@ if (
                 currentUser =
                     null;
 
-                window.location.href =
-                    "index.html";
+                // حماية لمنع الخروج المفاجئ أثناء استرجاع حالة الجلسة المحلية
+                setTimeout(function() {
+                    if (!auth.currentUser) {
+                        window.location.href = "index.html";
+                    }
+                }, 1000);
 
                 return;
             }
@@ -3677,11 +3689,6 @@ if (
                 console.error(
                     "CHAT START ERROR:",
                     error
-                );
-
-                alert(
-                    "حدث خطأ أثناء تشغيل الشات:\n" +
-                    error.message
                 );
             }
         }
