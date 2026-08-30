@@ -13,6 +13,7 @@
    IMAGE
    VIDEO
    VIEW ONCE
+   STICKERS
 ========================================================= */
 
 console.log("CHAT.JS STARTED");
@@ -70,6 +71,20 @@ const messageInput =
 
 const sendMessageBtn =
     document.getElementById("sendMessageBtn");
+
+
+/* =========================================================
+   STICKERS DOM
+========================================================= */
+
+const stickerBtn =
+    document.getElementById("stickerBtn");
+
+const stickerPickerOverlay =
+    document.getElementById("stickerPickerOverlay");
+
+const stickerItems =
+    document.querySelectorAll(".sticker-item");
 
 
 /* =========================================================
@@ -293,7 +308,7 @@ function getUserPhoto(profile, user) {
 function getTimestampNumber(timestamp) {
 
     if (!timestamp)
-        return 0;
+        return Date.now(); // استرجاع التوقيت الحالي فوراً بدلاً من 0 لتفادي التأخير قبل استجابة السيرفر
 
     try {
 
@@ -325,11 +340,11 @@ function getTimestampNumber(timestamp) {
             );
         }
 
-        return 0;
+        return Date.now();
 
     } catch (error) {
 
-        return 0;
+        return Date.now();
     }
 }
 
@@ -426,7 +441,6 @@ function scrollToBottom() {
     if (!messagesArea)
         return;
 
-    // استدعاء فوري ومزدوج مع التوثيق لضمان هبوط الشاشة للأسفل فوراً
     messagesArea.scrollTop = messagesArea.scrollHeight;
 
     setTimeout(function () {
@@ -781,8 +795,6 @@ function startMessagesListener() {
                     "FIRESTORE ERROR:",
                     error
                 );
-
-                // إلغاء الـ alert لتوفير تجربة سلسة وتجنب مضايقة المستخدم عند الانقطاع اللحظي للشبكة
             }
         );
 }
@@ -999,7 +1011,7 @@ function renderMessage(message) {
 
 
         /* =================================================
-           STICKER
+           STICKER (FIXED DISPLAY)
         ================================================= */
 
         if (
@@ -1012,19 +1024,20 @@ function renderMessage(message) {
             sticker.className =
                 "message-sticker";
 
-            sticker.src =
-                String(
-                    message.sticker || "1"
-                ) + ".png";
+            let stickerUrl = String(message.sticker || "");
 
-            sticker.alt =
-                "Sticker";
+            // التأكد من جلب المسار الكامل والصحيح
+            if (stickerUrl && !stickerUrl.includes(".") && !stickerUrl.startsWith("http") && !stickerUrl.startsWith("data:")) {
+                stickerUrl = stickerUrl + ".png";
+            }
 
-            sticker.style.maxWidth =
-                "180px";
+            sticker.src = stickerUrl;
+            sticker.alt = "Sticker";
 
-            sticker.style.maxHeight =
-                "180px";
+            sticker.style.maxWidth = "160px";
+            sticker.style.maxHeight = "160px";
+            sticker.style.objectFit = "contain";
+            sticker.style.display = "block";
 
             bubble.appendChild(
                 sticker
@@ -1814,7 +1827,88 @@ window.saveChatMessage =
 
 
 /* =========================================================
-   SEND TEXT
+   STICKERS LOGIC
+========================================================= */
+
+if (stickerBtn && stickerPickerOverlay) {
+
+    stickerBtn.addEventListener("click", function (event) {
+
+        event.stopPropagation();
+
+        const isVisible =
+            stickerPickerOverlay.style.display === "flex";
+
+        stickerPickerOverlay.style.display =
+            isVisible ? "none" : "flex";
+
+    });
+
+
+    document.addEventListener("click", function (event) {
+
+        if (
+            stickerPickerOverlay &&
+            !stickerPickerOverlay.contains(event.target) &&
+            event.target !== stickerBtn
+        ) {
+
+            stickerPickerOverlay.style.display = "none";
+        }
+
+    });
+}
+
+
+if (stickerItems && stickerItems.length > 0) {
+
+    stickerItems.forEach(function (item) {
+
+        item.addEventListener("click", async function () {
+
+            if (!currentUser) return;
+
+            // جلب المسار الفعلي من السورس الخاص بالصورة
+            const stickerSrc =
+                this.getAttribute("src") ||
+                this.dataset.sticker;
+
+
+            if (!stickerSrc) return;
+
+
+            try {
+
+                if (stickerPickerOverlay)
+                    stickerPickerOverlay.style.display = "none";
+
+
+                await saveChatMessage({
+
+                    type: "sticker",
+
+                    sticker: stickerSrc
+
+                });
+
+
+                scrollToBottom();
+
+            } catch (error) {
+
+                console.error("STICKER SEND ERROR:", error);
+
+                showChatToast("فشل إرسال الملصق");
+            }
+
+        });
+
+    });
+}
+
+
+/* =========================================================
+   SEND TEXT (OPTIMISTIC / INSTANT SEND)
 ========================================================= */
 
 if (messageForm) {
@@ -1844,9 +1938,20 @@ if (messageForm) {
 
                 try {
 
+                    const currentEditId = editingMessageId;
+
+                    editingMessageId = null;
+
+                    messageInput.value = "";
+
+                    updateSendButton();
+
+                    autoResizeTextarea();
+
+
                     await messagesRef
                         .doc(
-                            editingMessageId
+                            currentEditId
                         )
                         .update({
 
@@ -1863,18 +1968,6 @@ if (messageForm) {
 
                         });
 
-
-                    editingMessageId =
-                        null;
-
-
-                    messageInput.value =
-                        "";
-
-
-                    updateSendButton();
-
-                    autoResizeTextarea();
 
                     scrollToBottom();
 
@@ -1965,26 +2058,21 @@ if (messageForm) {
             }
 
 
-            // تفريغ المدخلات فورياً لاستجابة أسرع للواجهة
+            // تفريغ الشاشة فورياً والتمرير لتجربة إرسال لحظية بدون تأخير
             messageInput.value = "";
+
             autoResizeTextarea();
 
+            clearReply();
+
+            scrollToBottom();
+
+
             try {
-
-                if (sendMessageBtn)
-                    sendMessageBtn.disabled =
-                        true;
-
 
                 await messagesRef.add(
                     data
                 );
-
-
-                clearReply();
-
-                scrollToBottom();
-
 
             } catch (error) {
 
@@ -1993,16 +2081,7 @@ if (messageForm) {
                     error
                 );
 
-                alert(
-                    "فشل إرسال الرسالة:\n" +
-                    error.message
-                );
-
-            } finally {
-
-                if (sendMessageBtn)
-                    sendMessageBtn.disabled =
-                        false;
+                showChatToast("فشل إرسال الرسالة");
             }
         }
     );
@@ -2997,11 +3076,6 @@ async function openViewOnceMedia(message) {
             video.preload =
                 "metadata";
 
-            /*
-             * إزالة زر Download من مشغل
-             * الفيديو في المتصفحات التي تدعم controlsList
-             */
-
             video.setAttribute(
                 "controlsList",
                 "nodownload noremoteplayback"
@@ -3655,7 +3729,9 @@ if (
                 currentUser =
                     null;
 
-                // حماية لمنع الخروج المفاجئ أثناء استرجاع حالة الجلسة المحلية
+                window.currentUser =
+                    null;
+
                 setTimeout(function() {
                     if (!auth.currentUser) {
                         window.location.href = "index.html";
@@ -3667,6 +3743,9 @@ if (
 
 
             currentUser =
+                user;
+
+            window.currentUser =
                 user;
 
 
