@@ -13,7 +13,7 @@
    IMAGE
    VIDEO
    VIEW ONCE
-   STICKERS
+   STICKER
 ========================================================= */
 
 console.log("CHAT.JS STARTED");
@@ -71,20 +71,6 @@ const messageInput =
 
 const sendMessageBtn =
     document.getElementById("sendMessageBtn");
-
-
-/* =========================================================
-   STICKERS DOM
-========================================================= */
-
-const stickerBtn =
-    document.getElementById("stickerBtn");
-
-const stickerPickerOverlay =
-    document.getElementById("stickerPickerOverlay");
-
-const stickerItems =
-    document.querySelectorAll(".sticker-item");
 
 
 /* =========================================================
@@ -338,10 +324,6 @@ function getTimestampNumber(timestamp) {
                 Number(timestamp.seconds) *
                 1000
             );
-        }
-
-        if (typeof timestamp === "number") {
-            return timestamp;
         }
 
         return 0;
@@ -761,10 +743,14 @@ function startMessagesListener() {
 
                 messages.sort(function (a, b) {
 
-                    const timeA = getTimestampNumber(a.createdAt) || getTimestampNumber(a.timestamp);
-                    const timeB = getTimestampNumber(b.createdAt) || getTimestampNumber(b.timestamp);
-
-                    return timeA - timeB;
+                    return (
+                        getTimestampNumber(
+                            a.createdAt
+                        ) -
+                        getTimestampNumber(
+                            b.createdAt
+                        )
+                    );
 
                 });
 
@@ -1024,19 +1010,19 @@ function renderMessage(message) {
             sticker.className =
                 "message-sticker";
 
-            let stickerUrl = String(message.sticker || "");
+            const rawSticker = String(message.sticker || message.url || "1");
+            sticker.src = rawSticker.includes(".") || rawSticker.startsWith("http")
+                ? rawSticker
+                : rawSticker + ".png";
 
-            if (stickerUrl && !stickerUrl.includes(".") && !stickerUrl.startsWith("http") && !stickerUrl.startsWith("data:")) {
-                stickerUrl = stickerUrl + ".png";
-            }
+            sticker.alt =
+                "Sticker";
 
-            sticker.src = stickerUrl;
-            sticker.alt = "Sticker";
+            sticker.style.maxWidth =
+                "180px";
 
-            sticker.style.maxWidth = "160px";
-            sticker.style.maxHeight = "160px";
-            sticker.style.objectFit = "contain";
-            sticker.style.display = "block";
+            sticker.style.maxHeight =
+                "180px";
 
             bubble.appendChild(
                 sticker
@@ -1480,7 +1466,7 @@ function renderMessage(message) {
 
     time.textContent =
         formatMessageTime(
-            message.createdAt || message.timestamp
+            message.createdAt
         );
 
     footer.appendChild(
@@ -1564,6 +1550,115 @@ function renderMessage(message) {
         wrapper
     );
 }
+
+
+/* =========================================================
+   SEND STICKER
+========================================================= */
+
+async function sendSticker(stickerName) {
+
+    if (!currentUser)
+        return;
+
+    const data = {
+
+        senderId:
+            currentUser.uid,
+
+        senderName:
+            getUserName(
+                currentUserProfile,
+                currentUser
+            ),
+
+        senderEmail:
+            currentUser.email ||
+            "",
+
+        type:
+            "sticker",
+
+        sticker:
+            stickerName,
+
+        createdAt:
+            firebase.firestore
+                .FieldValue
+                .serverTimestamp(),
+
+        edited:
+            false,
+
+        deleted:
+            false,
+
+        pinned:
+            false,
+
+        readBy: {
+
+            [currentUser.uid]:
+                true
+        },
+
+        hiddenFor:
+            {}
+
+    };
+
+
+    if (replyToMessage) {
+
+        data.replyTo = {
+
+            messageId:
+                replyToMessage.id,
+
+            senderId:
+                replyToMessage.senderId,
+
+            senderName:
+                replyToMessage.senderName ||
+                "",
+
+            text:
+                getMessagePreviewText(
+                    replyToMessage
+                )
+        };
+    }
+
+
+    try {
+
+        await messagesRef.add(
+            data
+        );
+
+
+        clearReply();
+
+        scrollToBottom();
+
+
+    } catch (error) {
+
+        console.error(
+            "SEND STICKER ERROR:",
+            error
+        );
+
+        alert(
+            "فشل إرسال الملصق:\n" +
+            error.message
+        );
+    }
+}
+
+
+window.sendSticker =
+    sendSticker;
 
 
 /* =========================================================
@@ -1826,86 +1921,6 @@ window.saveChatMessage =
 
 
 /* =========================================================
-   STICKERS LOGIC
-========================================================= */
-
-if (stickerBtn && stickerPickerOverlay) {
-
-    stickerBtn.addEventListener("click", function (event) {
-
-        event.stopPropagation();
-
-        const isVisible =
-            stickerPickerOverlay.style.display === "flex";
-
-        stickerPickerOverlay.style.display =
-            isVisible ? "none" : "flex";
-
-    });
-
-
-    document.addEventListener("click", function (event) {
-
-        if (
-            stickerPickerOverlay &&
-            !stickerPickerOverlay.contains(event.target) &&
-            event.target !== stickerBtn
-        ) {
-
-            stickerPickerOverlay.style.display = "none";
-        }
-
-    });
-}
-
-
-if (stickerItems && stickerItems.length > 0) {
-
-    stickerItems.forEach(function (item) {
-
-        item.addEventListener("click", async function () {
-
-            if (!currentUser) return;
-
-            const stickerSrc =
-                this.getAttribute("src") ||
-                this.dataset.sticker;
-
-
-            if (!stickerSrc) return;
-
-
-            try {
-
-                if (stickerPickerOverlay)
-                    stickerPickerOverlay.style.display = "none";
-
-
-                await saveChatMessage({
-
-                    type: "sticker",
-
-                    sticker: stickerSrc
-
-                });
-
-
-                scrollToBottom();
-
-            } catch (error) {
-
-                console.error("STICKER SEND ERROR:", error);
-
-                showChatToast("فشل إرسال الملصق");
-            }
-
-        });
-
-    });
-}
-
-
-/* =========================================================
    SEND TEXT
 ========================================================= */
 
@@ -1936,20 +1951,9 @@ if (messageForm) {
 
                 try {
 
-                    const currentEditId = editingMessageId;
-
-                    editingMessageId = null;
-
-                    messageInput.value = "";
-
-                    updateSendButton();
-
-                    autoResizeTextarea();
-
-
                     await messagesRef
                         .doc(
-                            currentEditId
+                            editingMessageId
                         )
                         .update({
 
@@ -1966,6 +1970,18 @@ if (messageForm) {
 
                         });
 
+
+                    editingMessageId =
+                        null;
+
+
+                    messageInput.value =
+                        "";
+
+
+                    updateSendButton();
+
+                    autoResizeTextarea();
 
                     scrollToBottom();
 
@@ -2057,17 +2073,24 @@ if (messageForm) {
 
 
             messageInput.value = "";
-
             autoResizeTextarea();
 
-            clearReply();
-
-
             try {
+
+                if (sendMessageBtn)
+                    sendMessageBtn.disabled =
+                        true;
+
 
                 await messagesRef.add(
                     data
                 );
+
+
+                clearReply();
+
+                scrollToBottom();
+
 
             } catch (error) {
 
@@ -2076,7 +2099,16 @@ if (messageForm) {
                     error
                 );
 
-                showChatToast("فشل إرسال الرسالة");
+                alert(
+                    "فشل إرسال الرسالة:\n" +
+                    error.message
+                );
+
+            } finally {
+
+                if (sendMessageBtn)
+                    sendMessageBtn.disabled =
+                        false;
             }
         }
     );
@@ -2940,6 +2972,7 @@ window.openMedia =
 
 /* =========================================================
    VIEW ONCE
+   NO DOWNLOAD BUTTON
 ========================================================= */
 
 async function openViewOnceMedia(message) {
@@ -2989,6 +3022,11 @@ async function openViewOnceMedia(message) {
             "";
 
 
+        /* =================================================
+           IMAGE — VIEW ONCE
+           NO DOWNLOAD BUTTON
+        ================================================= */
+
         if (
             message.mediaType ===
             "image"
@@ -3035,6 +3073,12 @@ async function openViewOnceMedia(message) {
                 img
             );
         }
+
+
+        /* =================================================
+           VIDEO — VIEW ONCE
+           REMOVE DOWNLOAD BUTTON
+        ================================================= */
 
         else if (
             message.mediaType ===
@@ -3089,6 +3133,10 @@ async function openViewOnceMedia(message) {
             "flex";
 
 
+        /* =================================================
+           MARK OPENED
+        ================================================= */
+
         await messagesRef
             .doc(message.id)
             .update({
@@ -3105,6 +3153,10 @@ async function openViewOnceMedia(message) {
                         .serverTimestamp()
             });
 
+
+        /* =================================================
+           LOCAL UPDATE
+        ================================================= */
 
         const localMessage =
             allMessages.find(
@@ -3704,9 +3756,6 @@ if (
                 currentUser =
                     null;
 
-                window.currentUser =
-                    null;
-
                 setTimeout(function() {
                     if (!auth.currentUser) {
                         window.location.href = "index.html";
@@ -3718,9 +3767,6 @@ if (
 
 
             currentUser =
-                user;
-
-            window.currentUser =
                 user;
 
 
