@@ -308,7 +308,7 @@ function getUserPhoto(profile, user) {
 function getTimestampNumber(timestamp) {
 
     if (!timestamp)
-        return Date.now(); // استرجاع التوقيت الحالي فوراً بدلاً من 0 لتفادي التأخير قبل استجابة السيرفر
+        return 0;
 
     try {
 
@@ -340,11 +340,15 @@ function getTimestampNumber(timestamp) {
             );
         }
 
-        return Date.now();
+        if (typeof timestamp === "number") {
+            return timestamp;
+        }
+
+        return 0;
 
     } catch (error) {
 
-        return Date.now();
+        return 0;
     }
 }
 
@@ -757,14 +761,10 @@ function startMessagesListener() {
 
                 messages.sort(function (a, b) {
 
-                    return (
-                        getTimestampNumber(
-                            a.createdAt
-                        ) -
-                        getTimestampNumber(
-                            b.createdAt
-                        )
-                    );
+                    const timeA = getTimestampNumber(a.createdAt) || getTimestampNumber(a.timestamp);
+                    const timeB = getTimestampNumber(b.createdAt) || getTimestampNumber(b.timestamp);
+
+                    return timeA - timeB;
 
                 });
 
@@ -1011,7 +1011,7 @@ function renderMessage(message) {
 
 
         /* =================================================
-           STICKER (FIXED DISPLAY)
+           STICKER
         ================================================= */
 
         if (
@@ -1026,7 +1026,6 @@ function renderMessage(message) {
 
             let stickerUrl = String(message.sticker || "");
 
-            // التأكد من جلب المسار الكامل والصحيح
             if (stickerUrl && !stickerUrl.includes(".") && !stickerUrl.startsWith("http") && !stickerUrl.startsWith("data:")) {
                 stickerUrl = stickerUrl + ".png";
             }
@@ -1481,7 +1480,7 @@ function renderMessage(message) {
 
     time.textContent =
         formatMessageTime(
-            message.createdAt
+            message.createdAt || message.timestamp
         );
 
     footer.appendChild(
@@ -1868,7 +1867,6 @@ if (stickerItems && stickerItems.length > 0) {
 
             if (!currentUser) return;
 
-            // جلب المسار الفعلي من السورس الخاص بالصورة
             const stickerSrc =
                 this.getAttribute("src") ||
                 this.dataset.sticker;
@@ -1908,7 +1906,7 @@ if (stickerItems && stickerItems.length > 0) {
 
 
 /* =========================================================
-   SEND TEXT (OPTIMISTIC / INSTANT SEND)
+   SEND TEXT
 ========================================================= */
 
 if (messageForm) {
@@ -2058,14 +2056,11 @@ if (messageForm) {
             }
 
 
-            // تفريغ الشاشة فورياً والتمرير لتجربة إرسال لحظية بدون تأخير
             messageInput.value = "";
 
             autoResizeTextarea();
 
             clearReply();
-
-            scrollToBottom();
 
 
             try {
@@ -2945,7 +2940,6 @@ window.openMedia =
 
 /* =========================================================
    VIEW ONCE
-   NO DOWNLOAD BUTTON
 ========================================================= */
 
 async function openViewOnceMedia(message) {
@@ -2995,11 +2989,6 @@ async function openViewOnceMedia(message) {
             "";
 
 
-        /* =================================================
-           IMAGE — VIEW ONCE
-           NO DOWNLOAD BUTTON
-        ================================================= */
-
         if (
             message.mediaType ===
             "image"
@@ -3046,12 +3035,6 @@ async function openViewOnceMedia(message) {
                 img
             );
         }
-
-
-        /* =================================================
-           VIDEO — VIEW ONCE
-           REMOVE DOWNLOAD BUTTON
-        ================================================= */
 
         else if (
             message.mediaType ===
@@ -3106,10 +3089,6 @@ async function openViewOnceMedia(message) {
             "flex";
 
 
-        /* =================================================
-           MARK OPENED
-        ================================================= */
-
         await messagesRef
             .doc(message.id)
             .update({
@@ -3126,10 +3105,6 @@ async function openViewOnceMedia(message) {
                         .serverTimestamp()
             });
 
-
-        /* =================================================
-           LOCAL UPDATE
-        ================================================= */
 
         const localMessage =
             allMessages.find(
