@@ -998,10 +998,9 @@ function renderMessage(message) {
 
 
         /* =================================================
-           STICKER
+           STICKER (تم التعديل هنا لعرض الصورة بشكل صحيح)
         ================================================= */
 
-        /* تعديل نقطة (1): إصلاح طريقة معالجة وعرض مسار الـ Sticker بشكل دقيق */
         if (
             message.type === "sticker"
         ) {
@@ -1012,29 +1011,29 @@ function renderMessage(message) {
             sticker.className =
                 "message-sticker";
 
-            let stickerSrc = String(message.sticker || message.url || "1");
+            // تحديد مصدر الصورة بناءً على القيم المحفوظة في قاعدة البيانات (سواء كانت رابط مباشر أو اسم ملف أو مسار)
+            let stickerSrc = String(message.sticker || message.url || message.text || "");
 
-            if (!stickerSrc.startsWith("http") && !stickerSrc.includes("/")) {
-                stickerSrc = stickerSrc + ".png";
+            // إذا كان المدخل مجرد رقم أو اسم بدون مسار أو امتداد، اجعله يشير لمسار مجلد الملصقات أو اترك الـ src كما هو
+            if (stickerSrc && !stickerSrc.startsWith("http") && !stickerSrc.includes("/")) {
+                if (!stickerSrc.includes(".")) {
+                    stickerSrc = stickerSrc + ".png";
+                }
             }
 
             sticker.src = stickerSrc;
 
-            sticker.alt =
-                "Sticker";
+            sticker.alt = "Sticker";
 
-            sticker.style.maxWidth =
-                "180px";
+            sticker.style.maxWidth = "180px";
+            sticker.style.maxHeight = "180px";
+            sticker.style.objectFit = "contain";
+            sticker.style.display = "block";
 
-            sticker.style.maxHeight =
-                "180px";
-
-            sticker.style.objectFit =
-                "contain";
-
+            // في حال فشل تحميل الصورة بالامتداد الأول تجربة امتداد آخر أو عرض تفادي الكسر
             sticker.onerror = function() {
-                if (!sticker.src.endsWith(".png") && !sticker.src.startsWith("http")) {
-                    sticker.src = sticker.src + ".png";
+                if (sticker.src.endsWith(".png")) {
+                    sticker.src = sticker.src.replace(".png", ".jpg");
                 }
             };
 
