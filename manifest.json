@@ -1,0 +1,13 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "CodeBox",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "CodeBox",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "description": "Private chat application",
+  "lang": "ar"
+}
