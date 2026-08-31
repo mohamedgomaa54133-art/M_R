@@ -2511,6 +2511,36 @@ button {
     }
 
 }
+/* إظهار وتخصيص حاوية الشات والـ Scrollbar لجعلها سهلة اللمس */
+#messagesArea {
+    overflow-y: scroll !important; /* إجبار ظهور الشريط دائماً */
+    scrollbar-width: thin; /* لمتصفحات فايرفوكس */
+    scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+}
+
+/* تخصيص شكل شريط التمرير لمنصات كروم وسفاري */
+#messagesArea::-webkit-scrollbar {
+    width: 10px !important; /* تكبير عرض الشريط عشان يكون سهل اللمس بصباعك */
+    display: block !important;
+}
+
+#messagesArea::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); /* خلفية مسار الشريط */
+    border-radius: 10px;
+}
+
+#messagesArea::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4) !important; /* لون المقبض نفسه اللي بتشده لفوق وتحت */
+    border-radius: 10px;
+    border: 2px solid transparent; 
+    background-clip: content-box;
+}
+
+/* لما تضغط أو تلمس الشريط بصباعك يغمق اكتر عشان تحس بيه */
+#messagesArea::-webkit-scrollbar-thumb:active {
+    background: rgba(255, 255, 255, 0.7) !important;
+}
+
 
 /* =========================================================
    END OF CHAT-STYLE.CSS
